@@ -153,7 +153,7 @@ async function submitContactForm(contactData, calculationData) {
 
     try {
         // Отправляем на ваш сервер (замените URL на свой)
-        const response = await fetch('https://ваш-сервер.ru/api/contact', {
+        const response = await fetch('https://supply-server-h8sg.onrender.com/api/contact', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
