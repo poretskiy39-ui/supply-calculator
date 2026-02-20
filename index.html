@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Supply Master · Калькулятор поставок</title>
+    <!-- Подключаем шрифт Inter для премиального вида -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Подключаем стили -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Подключаем Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Шапка с градиентом -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">Supply<span class="accent">Master</span></h1>
+                <p class="subtitle">Профессиональный расчёт поставок</p>
+            </div>
+            <div class="header-decoration"></div>
+        </header>
+
+        <!-- Основной контент: калькулятор -->
+        <main class="main-content">
+            <!-- Прогресс-бар (визуальная подсказка) -->
+            <div class="progress-container">
+                <div class="progress-steps">
+                    <span class="step active" data-step="1">1. Параметры</span>
+                    <span class="step" data-step="2">2. Расчёт</span>
+                    <span class="step" data-step="3">3. Контакты</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 33%"></div>
+                </div>
+            </div>
+
+            <!-- Форма калькулятора (шаг 1) -->
+            <section id="step1" class="step-section active">
+                <h2 class="section-title">Введите данные товара</h2>
+                
+                <form id="calcForm" class="premium-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productName">Наименование товара</label>
+                            <input type="text" id="productName" placeholder="Например: Смартфон X100" class="premium-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row split">
+                        <div class="form-group">
+                            <label for="quantity">Количество (шт)</label>
+                            <input type="number" id="quantity" min="1" value="100" class="premium-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="priceUsd">Цена за шт ($)</label>
+                            <input type="number" id="priceUsd" min="0.01" step="0.01" value="25.50" class="premium-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="usdRate">Курс USD → RUB</label>
+                            <input type="number" id="usdRate" min="0.01" step="0.01" value="95.5" class="premium-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row split">
+                        <div class="form-group">
+                            <label for="weight">Вес ед. (кг)</label>
+                            <input type="number" id="weight" min="0.1" step="0.1" value="0.5" class="premium-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="volume">Объём ед. (м³)</label>
+                            <input type="number" id="volume" min="0.001" step="0.001" value="0.01" class="premium-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transport">Тип транспорта</label>
+                            <select id="transport" class="premium-select">
+                                <option value="avia">Авиа (дорого, быстро)</option>
+                                <option value="sea" selected>Море (дёшево, долго)</option>
+                                <option value="rail">Ж/Д (средне)</option>
+                                <option value="auto">Авто (гибко)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="logisticsRate">Ставка логистики ($/кг)</label>
+                            <input type="number" id="logisticsRate" min="0.1" step="0.1" value="2.5" class="premium-input">
+                            <small class="input-hint">* Уточните у логиста</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row split">
+                        <div class="form-group">
+                            <label for="dutyRate">Пошлина (%)</label>
+                            <input type="number" id="dutyRate" min="0" step="0.1" value="5" class="premium-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastMile">Последняя миля (₽/кг)</label>
+                            <input type="number" id="lastMile" min="0" step="1" value="50" class="premium-input">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="calculateBtn" class="premium-button primary">
+                            <span>Рассчитать стоимость</span>
+                            <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Результаты расчёта (шаг 2) -->
+            <section id="step2" class="step-section">
+                <h2 class="section-title">Результаты расчёта</h2>
+                
+                <div class="results-card">
+                    <div class="result-summary">
+                        <div class="product-badge" id="resultProductName">Товар: Смартфон X100</div>
+                        <div class="total-cost">
+                            <span class="total-label">ИТОГО:</span>
+                            <span class="total-value" id="totalRub">0 ₽</span>
+                        </div>
+                        <div class="cost-per-item" id="costPerItem">0 ₽ / шт</div>
+                    </div>
+
+                    <div class="cost-breakdown">
+                        <h3 class="breakdown-title">Детализация затрат</h3>
+                        
+                        <div class="cost-item">
+                            <span class="cost-name">Инвойс</span>
+                            <span class="cost-value" id="invoiceRub">0 ₽</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-name">Комиссия ТД (10%)</span>
+                            <span class="cost-value" id="tdRub">0 ₽</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-name">Комиссия агента (4%)</span>
+                            <span class="cost-value" id="agentRub">0 ₽</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-name">Логистика</span>
+                            <span class="cost-value" id="logisticsRub">0 ₽</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-name">Пошлина</span>
+                            <span class="cost-value" id="dutyRub">0 ₽</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-name">НДС (20%)</span>
+                            <span class="cost-value" id="vatRub">0 ₽</span>
+                        </div>
+                        <div class="cost-item total-line">
+                            <span class="cost-name">Последняя миля</span>
+                            <span class="cost-value" id="lastMileRub">0 ₽</span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="backToEditBtn" class="premium-button secondary">
+                            ← Вернуться к редактированию
+                        </button>
+                        <button type="button" id="continueToContactBtn" class="premium-button primary">
+                            Оставить контакты →
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Форма контактов (шаг 3) -->
+            <section id="step3" class="step-section">
+                <h2 class="section-title">Получите расчёт на почту</h2>
+                
+                <div class="contact-card">
+                    <p class="contact-intro">Наш менеджер подготовит персональное предложение и отправит вам полную смету.</p>
+                    
+                    <form id="contactForm" class="premium-form">
+                        <div class="form-group">
+                            <label for="contactName">Ваше имя</label>
+                            <input type="text" id="contactName" placeholder="Иван Иванов" class="premium-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contactPhone">Телефон (WhatsApp/Telegram)</label>
+                            <input type="tel" id="contactPhone" placeholder="+7 (999) 123-45-67" class="premium-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contactEmail">Email</label>
+                            <input type="email" id="contactEmail" placeholder="ivan@example.com" class="premium-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contactComment">Комментарий (необязательно)</label>
+                            <textarea id="contactComment" rows="3" placeholder="Дополнительные пожелания..." class="premium-textarea"></textarea>
+                        </div>
+                        
+                        <!-- Кнопка для быстрого получения контакта через Telegram (нативный запрос) -->
+                        <button type="button" id="requestTelegramContactBtn" class="premium-button telegram-contact">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Запросить контакт из Telegram
+                        </button>
+                        
+                        <div class="form-actions">
+                            <button type="submit" id="submitContactBtn" class="premium-button primary">
+                                Отправить заявку
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="success-message" id="successMessage" style="display: none;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 12L11 15L16 9" stroke-linecap="round"/>
+                        </svg>
+                        <h3>Заявка отправлена!</h3>
+                        <p>Мы свяжемся с вами в ближайшее время.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Нижняя панель с дополнительной информацией -->
+        <footer class="footer">
+            <p>© 2026 Supply Master · Профессиональный расчёт для селлеров</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
